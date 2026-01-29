@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>עץ מוצר קטלוג שוק דלאל</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0b1220;
+      --card:rgba(255,255,255,.06);
+      --border:rgba(255,255,255,.12);
+      --text:rgba(255,255,255,.92);
+      --muted:rgba(255,255,255,.65);
+      --shadow:0 10px 30px rgba(0,0,0,.35);
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:"Heebo",system-ui,-apple-system,Segoe UI,Arial,sans-serif;
+      background:radial-gradient(900px 600px at 80% 10%,rgba(125,211,252,.14),transparent 60%),
+                 radial-gradient(700px 500px at 10% 80%,rgba(134,239,172,.12),transparent 60%),
+                 var(--bg);
+      color:var(--text);
+    }
+    header{
+      position:sticky;top:0;z-index:10;
+      backdrop-filter:blur(10px);
+      background:rgba(11,18,32,.72);
+      border-bottom:1px solid var(--border);
+    }
+    .header-inner{max-width:1100px;margin:0 auto;padding:16px 18px;display:flex;gap:14px;align-items:flex-start;justify-content:space-between}
+    h1{margin:0;font-size:18px;font-weight:800;letter-spacing:.2px}
+    .sub{margin-top:4px;font-size:13px;color:var(--muted);line-height:1.35}
+
+    .container{max-width:1100px;margin:0 auto;padding:18px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+    .card-head{padding:14px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:10px}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+
+    input[type="text"]{
+      width:100%;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      outline:none;
+      font-size:13px;
+    }
+
+    .legend{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .pill{font-size:11.5px;border:1px solid var(--border);padding:2px 8px;border-radius:999px;color:rgba(255,255,255,.82)}
+    .pill.lv1{border-color:rgba(251,113,133,.40);background:rgba(251,113,133,.12)}
+    .pill.lv2{border-color:rgba(250,204,21,.40);background:rgba(250,204,21,.12)}
+    .pill.lv3{border-color:rgba(96,165,250,.40);background:rgba(96,165,250,.12)}
+
+    .tree-wrap{padding:12px 14px 14px 14px}
+    ul.tree{list-style:none;margin:0;padding:0}
+
+    .node{display:flex;align-items:center;gap:8px;padding:6px 6px;border-radius:12px;cursor:pointer;user-select:none}
+    .node:hover{background:rgba(255,255,255,.06)}
+    .node.selected{background:rgba(125,211,252,.14);border:1px solid rgba(125,211,252,.22)}
+
+    .toggle{width:26px;height:26px;border-radius:10px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);background:rgba(255,255,255,.05);font-weight:900;line-height:1;flex:0 0 26px}
+    .label{font-size:13.5px;font-weight:600}
+
+    .badge{margin-right:auto}
+
+    .children{margin:2px 18px 8px 0;padding-right:10px;border-right:1px dashed rgba(255,255,255,.14);display:none}
+    .children.open{display:block}
+
+    .panel{padding:12px 14px 16px 14px}
+    .path{font-size:13px;color:var(--muted);line-height:1.5}
+    .path strong{color:var(--text);font-weight:800}
+
+    /* בינתיים: מורידים את כל אזור המוצרים */
+    .grid{grid-template-columns:1fr !important;}
+    .grid > section.card:nth-child(2){display:none !important;}
+
+    .actions{display:none !important;}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div>
+        <h1>עץ מוצר קטלוג שוק דלאל</h1>
+        <div class="sub">שלב זה: עץ קטגוריות בלבד. ניהול מוצרים חוזר בהמשך.</div>
+      </div>
+      <div class="legend" aria-label="legend">
+        <span class="pill lv1">קטגוריה 1</span>
+        <span class="pill lv2">תת קטגוריה 2</span>
+        <span class="pill lv3">תת קטגוריה 3</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <div class="card-head">
+        <div class="row">
+          <div class="legend">
+            <span class="pill" id="countLeafs">0 נקודות מוצר</span>
+          </div>
+          <div class="legend">
+            <span class="pill" id="selectedInfo">לא נבחרה קטגוריה</span>
+          </div>
+        </div>
+        <input id="search" type="text" placeholder="חיפוש קטגוריה" />
+        <div class="path" id="path">בחר עלה בעץ כדי לראות את המסלול כאן.</div>
+      </div>
+      <div class="tree-wrap">
+        <ul class="tree" id="tree"></ul>
+      </div>
+    </section>
+  </main>
+
+<script>
+  // עץ: קטגוריה 1 → תת קטגוריה 2 → תת קטגוריה 3
+  // עלה = פריט בלי ילדים (יכול להיות קטגוריה 2 או 3)
+
+  const TREE_PART_1 = {
+    "פירות וירקות": {"פירות": {}, "ירקות": {}, "עלים": {}, "פירות חתוכים": {}, "מיוחדים": {}, "מיוחדות": {}},
+    "גבינות": {"גבינות במשקל": {}, "גבינות קשות": {}, "גבינות רקות": {}, "תחלפי גבינה": {}, "גבינות עובש": {}, "גבינות מלוחות": {}, "גבינות לבנות": {}, "גבינות חצי קשות": {}},
+    "נקנקים": {"פסטרמה": {"פסטרמה הודו / עוף / אווז": {}, "פסטרמה לבנה": {}, "פסטרמה בקר": {}, "פסטרמות ארוזות": {}}, "נקנקים": {"נקניק חצי יבש": {}}, "קבנוס": {}, "נקנקים ארוזים": {}, "נקנקיות": {}, "נקנקיות ארוזות": {}, "נקנקיות במשקל": {}},
+    "פצוחים ופירות יבישים": {"פיצוחים": {}, "תערובות": {}, "פירות יבשים": {}, "מארזים": {}},
+    "יין": {"יין אדום": {}, "יין לבן": {}, "יין מבעבע": {}, "יין רוזה": {}, "תירוש": {}},
+    "בירה": {"בירה בבודד": {}, "בירה במארז": {}, "בירה ארגז": {}, "בירות ללא אלכוהול": {}, "בירות בוטיק": {}},
+    "אלכוהול": {"וודקה": {}, "וויסקי": {}, "ברנדי וקוניאק": {}, "רום וג׳ין": {}, "ליקרים": {}, "טקילה": {}, "ערק ואניס": {}}
+  };
+
+  const TREE_PART_2 = {
+    "לחמים": {"לחמים ארוזים": {}, "חלות": {}, "טורטיות": {}, "לחמניות ופיתות": {}},
+    "עוגות ועוגיות": {"עוגות ארוזות": {}, "עוגיות ארוזות": {}, "עוגות פס": {}, "קרק": {}, "עוגות כשר לפסח": {}, "מארזי חג": {}},
+    "מתוקים וחטפים": {"ממתקים": {}, "טבלאות שוקולד": {}, "חטיפי שוקולד": {}, "מארזים משפחתיים": {}, "קראנצ׳ים": {}, "סוכריות": {}, "בונבוניירות ופרלינים": {}, "סוכריות ושוקולדים במשקל": {}, "מסטיקים": {}, "ממתיקים": {}, "חלווה": {}, "חטיפים": {}, "חטיפים מלוחים": {}, "בייגלה": {}, "פופקורן": {}},
+    "מכולת": {"מוצרי יסוד": {}, "שמנים": {}, "קמחים": {}, "סוכר": {}, "מלח": {}, "פרורי לחם": {}, "רטבים": {"קטשופ": {}, "מיונז": {}, "חרדל": {}, "חומץ": {}, "רטבים לפסטה": {}, "רטבים לסלט": {}}, "שימורים": {"שימורי ירקות": {}, "שימורי פירות": {}, "שימורי דגים": {}, "שימורי עגבניות": {}, "שימורי טונה": {}, "שימורי מלפפון": {}, "שימורי בשר": {}}, "ממרחים ומתבלים": {}, "מוצרי אפייה": {}, "פסטה / אטריות / נידלז": {}, "אורז קוסקוס ופתיתים": {}, "מנות להכנה מהירה": {}, "מרקים": {}, "שקדי מרק וקורטונים": {}, "דבש וסילן": {}, "ממרחים מתוקים": {}, "ריבות וקונפיטורות": {}, "דגני בוקר": {}, "גרנולה ומוזלי": {}, "חטיפי דגנים ואנרגיה": {}, "שיבולת שועל ודייסות": {}},
+    "בראות ואורגני": {"אורגני": {"פסטות / אורז / קטניות אורגנים": {}, "ממרחים ומתבלים אורגנים": {}, "רטבים ושימורים אורגנים": {}, "דגני בוקר וחטיפה ברות אורגנים": {}, "תחלפי חלב צמחיים אורגנים": {}, "משקאות אורגנים": {}}, "ללא גלוטן": {"פסטות ואטריות ללא גלוטן": {}, "קמחים ומוצרי אפייה ללא גלוטן": {}, "קרקרים ופירורי לחם ללא גלוטן": {}, "עוגות ועוגיות ללא גלוטן": {}, "שוקולד / ממתקים / חטיפים ללא גלוטן": {}, "דגנים ודגני בוקר ללא גלוטן": {}, "רטבים וממרחים ללא גלוטן": {}, "אבקות ושקדי מרק ללא גלוטן": {}}, "ללא תוספת סוכר": {"שוקולדים ומתוקים ללא תוספת סוכר": {}, "עוגות ועוגיות ללא תוספת סוכר": {}, "קרקרים וחטיפים ללא תוספת סוכר": {}, "ריבות וקונפיטורות ללא תוספת סוכר": {}, "חלווה / סילן / מייפל ללא תוספת סוכר": {}, "מוצרי אפייה ללא תוספת סוכר": {}, "דגנים ודגני בוקר ללא תוספת סוכר": {}, "תחליפי סוכר": {}}, "טבעוני": {"תחליפי חלב צמחיים": {}, "מעדנים ויוגורטים צמחיים": {}, "תחליפי גבינה ושמנת צמחיים": {}, "טופו ומוצרי סויה": {}}}
+  };
+
+  const TREE_PART_3 = {
+    "קפואים": {"בצקים": {"פיצות": {}, "בורקס": {}, "קיסונים": {}, "גיוזה": {}, "בלינצ׳ס ופנקייק": {}, "מלוואח / גחנון": {}, "בצק לאפייה": {}}, "פירות וירקות": {"ירקות קפואים": {}, "פרות קפואים": {}, "ציפס וטבעות בצל קפו": {}, "מתבלים קפואים": {}}, "בשרי ובעלי כנף": {"בשרים על האש": {}, "בשר לבישול": {}, "עוף": {}, "הודו": {}}, "דגים ופירות ים": {"דגים": {}, "פרות ים": {}}, "מאפים קפואים": {}, "גלידות": {"גלידות בודדות": {}, "גלידות פשפחתיות": {}}, "עוגות וקינוחים": {"עוגות קפואות": {}, "קינוחים קפואים": {}}, "בקירור": {"עוגות בקירור": {}, "קינוחים בקירור": {}, "מוצרי בצק בקירור": {}}},
+    "משקאות": {"משקאות קלים": {}, "מים מינרלים": {}, "משקאות מוגזים": {}, "מארזי משקאות": {}, "מים בטעמים": {}, "תה וקפה קר": {}, "נקטרים ומיצים": {}, "משקאות בקירור": {}, "משקאות אנרגיה": {}, "תרכיזים": {}, "בירה שחורה": {}, "משקאות חמים": {"קפה נמס": {}, "קפה שחור": {}, "תה וחליטות": {}, "קפסולות": {}, "אבקות ושוקו": {}, "תחליפי קפה": {}, "פולי קפה": {}}},
+    "מוצרי חלב": {"חלב ומשקאות חלב": {}, "חלב עמיד": {}, "ביצים": {}, "גבינות": {"גבינות לבנות": {}, "גבינות קוטג׳": {}, "גבינות צהובות": {}, "גבינות שמנת": {}, "גבינות מלוחות": {}, "גבינות עיזים": {}, "גבינות מותכות": {}, "גבינות פרמז׳ן": {}, "גבינות מיוחדות": {}, "תחליפי גבינה": {}}, "חמאה ומרגרינה": {}, "יוגורט ומעדנים": {"יוגורט לבן": {}, "יוגורט עם תוספות": {}, "יוגורט בטעמים": {}, "יוגורט צאן": {}, "מעדנים": {}, "משקאות יוגורט": {}, "יוגורט מעושר חלבון": {}}, "לבן אשל ושמנת": {"שמנת מתוקה / לבישול": {}, "שמנת חמוצה": {}, "לבן / אשל": {}}, "תחליפי חלב": {}, "תחליפי יוגורט ומעדנים": {}, "תחליפי גבינה": {}},
+    "סלטים": {"סלטים ארוזים": {}, "מתבלים": {}, "ממרחים חריפים": {}}
+  };
+
+  const TREE_PART_4 = {
+    "פארם ותינוקות": {"רחצה": {"שמפו ומרכך": {}, "סבון נוזלי": {}, "סבון מוצק": {}, "ספוגי רחצה": {}}, "מגבונים ושטיפות": {"מגבונים": {}, "שטיפות אינטימיות": {}}, "היגיינת הפה": {"משחות שיניים": {}, "מברשות שיניים": {}, "מי פה": {}, "קיסמים וחוט דנטלי": {}}, "היגיינה": {"היגיינה נשית": {}, "צמר גפן / צמרוני אוזניים": {}, "פלסטרים": {}}, "פרפורמריה": {"דאודורנטים": {}}, "הגנה": {"הגנה מהשמש": {}, "הגנה מיתושים": {}}, "גילוח": {"תכשירי גילוח ושעווה": {}}, "טיפוח": {"טיפוח ידיים ורגליים": {}, "טיפוח הגוף והפנים": {}, "מוצרים לשיער": {}}, "תינוקות": {"היגיינה לתינוקות": {"חיתולים": {}}, "מזון לתינוק": {"תחליפי חלב": {}, "דייסות": {}, "מחיות": {}, "חטיפים": {}}}, "נייר": {"נייר טואלט": {}, "טישו ומגבונים לחים": {}}},
+    "חומרי ניקוי": {"חומרי ניקוי לבית": {"למדיח כלים": {}, "לניקוי רצפות": {}, "אקונומיקה": {}, "ניקוי חלונות ומשטחים": {}, "מסירי שומנים": {}, "אסלות ואמבטיות": {}, "ניקוי כללי": {}, "מטהר אוויר": {}, "ריהוט ושטיחים": {}, "מסיר אבן וסתימות": {}, "קוטלי חרקים": {}}, "כביסה וגיהוץ": {"אבקות ונוזלי כביסה": {}, "מרכך כביסה": {}, "מוצרי כביסה": {}, "מסירי כתמים": {}}, "אבזרי ניקיון": {"מגבות נייר למטבח": {}, "שקיות אשפה": {}, "כריות קרצוף וספוגים": {}, "מטליות": {}, "כפפות": {}, "מטאטאים ומגבים": {}}},
+    "חד פעמי": {"צלחות כוסות קערות ומגשים": {}, "שקיות אוכל ונייר לכריכים": {}, "סכו״ם קשיות ושיפודים": {}, "מפות ומפיות": {}, "רדיד אלומיניום וניילון נצמד": {}, "גביעים ונייר אפיה": {}, "תבניות אלומיניום ותבניות נייר": {}},
+    "מוצרים לבית": {"סוללות": {}, "נירות וגפרורים": {}, "אבזרי מנגל": {}, "אבזרים": {}},
+    "בעלי חיים": {"מזון לחתולים": {}, "מזון לכלבים": {}, "אבזרים": {}}
+  };
+
+  const TREE = Object.assign({}, TREE_PART_1, TREE_PART_2, TREE_PART_3, TREE_PART_4);
+
+  let selectedPath = null;
+
+  // ✅ BUGFIX: hasChildren היה בשימוש אבל לא היה מוגדר.
+  function hasChildren(obj) {
+    return obj && typeof obj === "object" && Object.keys(obj).length > 0;
+  }
+
+  function countLeafs(obj){
+    let n = 0;
+    (function rec(o){
+      for(const k in o){
+        const child = o[k];
+        if(hasChildren(child)) rec(child);
+        else n++;
+      }
+    })(obj);
+    return n;
+  }
+
+  function buildTree(container, obj, pathArr=[]){
+    const ul = document.createElement("ul");
+    ul.className = "tree";
+    container.appendChild(ul);
+
+    for(const [label, child] of Object.entries(obj)){
+      const li = document.createElement("li");
+      const row = document.createElement("div");
+      row.className = "node";
+      row.setAttribute("data-label", label);
+
+      const nextPath = [...pathArr, label];
+      const childrenExist = hasChildren(child);
+
+      const toggle = document.createElement("div");
+      toggle.className = "toggle";
+      toggle.textContent = childrenExist ? "+" : "•";
+
+      const text = document.createElement("div");
+      text.className = "label";
+      text.textContent = label;
+
+      const badge = document.createElement("span");
+      badge.className = "pill badge " + (pathArr.length===0 ? "lv1" : (pathArr.length===1 ? "lv2" : "lv3"));
+      badge.textContent = (pathArr.length===0 ? "קטגוריה 1" : (pathArr.length===1 ? "תת קטגוריה 2" : "תת קטגוריה 3"));
+
+      row.appendChild(toggle);
+      row.appendChild(text);
+      row.appendChild(badge);
+      li.appendChild(row);
+
+      let childrenWrap = null;
+      if(childrenExist){
+        childrenWrap = document.createElement("div");
+        childrenWrap.className = "children";
+        li.appendChild(childrenWrap);
+        buildTree(childrenWrap, child, nextPath);
+      } else {
+        row.classList.add("leaf");
+      }
+
+      toggle.addEventListener("click", (e)=>{
+        e.stopPropagation();
+        if(!childrenExist) return;
+        const open = childrenWrap.classList.toggle("open");
+        toggle.textContent = open ? "−" : "+";
+      });
+
+      row.addEventListener("click", ()=>{
+        if(childrenExist){
+          const open = childrenWrap.classList.toggle("open");
+          toggle.textContent = open ? "−" : "+";
+          return;
+        }
+        // leaf selection handled by delegated listener
+      });
+
+      ul.appendChild(li);
+    }
+  }
+
+  function getPathFromLeafRow(rowEl){
+    const labels = [];
+    let li = rowEl.closest("li");
+    while(li){
+      const row = li.querySelector(":scope > .node");
+      if(row) labels.push(row.getAttribute("data-label"));
+      li = li.parentElement ? li.parentElement.closest("li") : null;
+    }
+    return labels.reverse();
+  }
+
+  function updateSelectionUI(){
+    const info = document.getElementById("selectedInfo");
+    const pathEl = document.getElementById("path");
+    if(!selectedPath){
+      info.textContent = "לא נבחרה קטגוריה";
+      pathEl.textContent = "בחר עלה בעץ כדי לראות את המסלול כאן.";
+      return;
+    }
+    info.textContent = "נבחרה קטגוריה";
+    pathEl.innerHTML = 'מסלול: <strong>' + selectedPath.join(' › ') + '</strong>';
+  }
+
+  function applySearch(q){
+    const query = (q||"").trim().toLowerCase();
+    const nodes = document.querySelectorAll("#tree .node");
+    nodes.forEach(node=>{
+      const label = (node.getAttribute("data-label")||"").toLowerCase();
+      node.style.display = (!query || label.includes(query)) ? "" : "none";
+    });
+    if(query){
+      document.querySelectorAll(".children").forEach(ch=>ch.classList.add("open"));
+      document.querySelectorAll(".toggle").forEach(t=>{ if(t.textContent==="+") t.textContent="−"; });
+    }
+  }
+
+  // ---- Tests (console.assert) ----
+  (function runTests(){
+    try {
+      console.groupCollapsed("Tree smoke tests");
+      console.assert(hasChildren({a:{}}) === true, "hasChildren should return true for non-empty object");
+      console.assert(hasChildren({}) === false, "hasChildren should return false for empty object");
+      console.assert(hasChildren(null) === false, "hasChildren should return false for null");
+      console.assert(typeof countLeafs(TREE) === "number" && countLeafs(TREE) > 0, "countLeafs should be a positive number");
+      console.groupEnd();
+    } catch (e) {
+      console.warn("Tests failed:", e);
+    }
+  })();
+
+  // init
+  const treeRoot = document.getElementById("tree");
+  treeRoot.innerHTML = "";
+  buildTree(treeRoot, TREE, []);
+  document.getElementById("countLeafs").textContent = countLeafs(TREE) + " נקודות מוצר";
+
+  document.getElementById("tree").addEventListener("click", (e)=>{
+    const leaf = e.target.closest(".node.leaf");
+    if(!leaf) return;
+    document.querySelectorAll(".node.selected").forEach(n=>n.classList.remove("selected"));
+    leaf.classList.add("selected");
+    selectedPath = getPathFromLeafRow(leaf);
+    updateSelectionUI();
+  });
+
+  document.getElementById("search").addEventListener("input", (e)=>applySearch(e.target.value));
+  updateSelectionUI();
+</script>
+</body>
+</html>
+  
